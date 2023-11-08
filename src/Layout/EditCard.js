@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { readDeck, readCard, updateCard } from "../utils/api"; 
+import CardForm from "./CardForm";
 
 function EditCard() {
   const { deckId, cardId } = useParams();
@@ -28,18 +29,6 @@ function EditCard() {
     loadDeckAndCard();
   }, [deckId, cardId]);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    try {
-      // Update the card with new content
-      await updateCard({ ...card, front, back }); // Use the updateCard function
-      history.push(`/decks/${deckId}`);
-    } catch (error) {
-      // Handle errors
-      console.error("Error updating card:", error);
-    }
-  };
-
   return (
     <div>
       <nav aria-label="breadcrumb">
@@ -56,38 +45,18 @@ function EditCard() {
         </ol>
       </nav>
       <h2>{deck ? deck.name : "Deck"}: Edit Card {cardId}</h2>
-      <form onSubmit={handleSave}>
-        <div className="mb-3">
-          <label htmlFor="front" className="form-label">
-            Front
-          </label>
-          <textarea
-            className="form-control"
-            id="front"
-            name="front"
-            value={front}
-            onChange={(e) => setFront(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="back" className="form-label">
-            Back
-          </label>
-          <textarea
-            className="form-control"
-            id="back"
-            name="back"
-            value={back}
-            onChange={(e) => setBack(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Save
-        </button>
-        <Link to={`/decks/${deckId}`} className="btn btn-secondary">
-          Cancel
-        </Link>
-      </form>
+      <CardForm
+        initialFront={front}
+        initialBack={back}
+        onSave={(updatedFront, updatedBack) => {
+          updateCard({ ...card, front: updatedFront, back: updatedBack })
+            .then(() => history.push(`/decks/${deckId}`))
+            .catch((error) => console.error("Error updating card:", error));
+        }}
+      />
+      <button className="btn btn-secondary" onClick={() => history.push(`/decks/${deckId}`)}>
+        Cancel
+      </button>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { readDeck, createCard } from "../utils/api"; 
+import CardForm from "./CardForm";
 
 function AddCard() {
   const { deckId } = useParams();
@@ -23,19 +24,6 @@ function AddCard() {
     loadDeck();
   }, [deckId]);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    try {
-      const newCard = await createCard(deckId, { front, back }); // Use the createCard function
-      // Clear the form fields
-      setFront("");
-      setBack("");
-    } catch (error) {
-      // Handle errors
-      console.error("Error creating card:", error);
-    }
-  };
-
   return (
     <div>
       <nav aria-label="breadcrumb">
@@ -52,41 +40,21 @@ function AddCard() {
         </ol>
       </nav>
       <h2>{deck ? deck.name : "Deck"}: Add Card</h2>
-      <form onSubmit={handleSave}>
-        <div className="mb-3">
-          <label htmlFor="front" className="form-label">
-            Front
-          </label>
-          <textarea
-            className="form-control"
-            id="front"
-            name="front"
-            value={front}
-            onChange={(e) => setFront(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="back" className="form-label">
-            Back
-          </label>
-          <textarea
-            className="form-control"
-            id="back"
-            name="back"
-            value={back}
-            onChange={(e) => setBack(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Save
-        </button>
-        <button
-          className="btn btn-secondary"
-          onClick={() => history.push(`/decks/${deckId}`)}
-        >
-          Done
-        </button>
-      </form>
+      <CardForm
+        initialFront={front} 
+        initialBack={back} 
+        onSave={(newFront, newBack) => {
+          createCard(deckId, { front: newFront, back: newBack })
+            .then(() => {
+              setFront(""); 
+              setBack(""); 
+            })
+            .catch((error) => console.error("Error creating card:", error));
+        }}
+      />
+      <button className="btn btn-secondary" onClick={() => history.push(`/decks/${deckId}`)}>
+        Done
+      </button>
     </div>
   );
 }
